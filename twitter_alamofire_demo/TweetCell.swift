@@ -86,7 +86,7 @@ class TweetCell: UITableViewCell {
         tweetTextLabel.text = tweet.text
         usernameLabel.text = tweet.user.name!
         useridLabel.text = "@" + tweet.user.screenName!
-        postTimeLabel.text = tweet.createdAtString
+        postTimeLabel.text = tweet.createdAtStringWithoutTime
         favouriteCountLabel.text = String(tweet.favoriteCount ?? 0)
         retweetCountLabel.text = String(tweet.retweetCount)
         

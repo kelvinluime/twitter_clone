@@ -8,6 +8,17 @@
 
 import Foundation
 
+enum TweetKey: String {
+    case id = "id"  // Int64
+    case text = "text"  // String
+    case favorited = "favorited"    // Int
+    case retweetCount = "retweet_count" // Int
+    case retweeted = "retweeted"    // boolean
+    case createdAt = "created_at"   // String
+    case favoriteCount = "favorite_count"   // Int
+    case user = "user"
+}
+
 class Tweet {
     
     // MARK: Properties
@@ -18,31 +29,33 @@ class Tweet {
     var retweetCount: Int // Update favorite count label
     var retweeted: Bool // Configure retweet button
     var user: User // Contains name, screenname, etc. of tweet author
-    var createdAtString: String // Display date
+    var createdAtStringWithoutTime: String // Display date
+    var createdAtStringWithTime: String
     
     // MARK: - Create initializer with dictionary
     init(dictionary: [String: Any]) {
-        id = dictionary["id"] as! Int64
-        text = dictionary["text"] as! String
-        favoriteCount = dictionary["favorite_count"] as? Int
-        favorited = dictionary["favorited"] as? Bool
-        retweetCount = dictionary["retweet_count"] as! Int
-        retweeted = dictionary["retweeted"] as! Bool
+        id = dictionary[TweetKey.id.rawValue] as! Int64
+        text = dictionary[TweetKey.text.rawValue] as! String
+        favoriteCount = dictionary[TweetKey.favoriteCount.rawValue] as? Int
+        favorited = dictionary[TweetKey.favorited.rawValue] as? Bool
+        retweetCount = dictionary[TweetKey.retweetCount.rawValue] as! Int
+        retweeted = dictionary[TweetKey.retweeted.rawValue] as! Bool
         
-        let user = dictionary["user"] as! [String: Any]
+        let user = dictionary[TweetKey.user.rawValue] as! [String: Any]
         self.user = User(dictionary: user)
         
-        let createdAtOriginalString = dictionary["created_at"] as! String
+        let createdAtOriginalString = dictionary[TweetKey.createdAt.rawValue] as! String
+        createdAtStringWithoutTime = Tweet.getFormattedTimeStamp(createdAtOriginalString, include: false)
+        createdAtStringWithTime = Tweet.getFormattedTimeStamp(createdAtOriginalString, include: true)
+    }
+    
+    static func getFormattedTimeStamp(_ rawTimeString: String, include time: Bool) -> String {
         let formatter = DateFormatter()
-        // Configure the input format to parse the date string
-        formatter.dateFormat = "E MMM d HH:mm:ss Z y"
-        // Convert String to Date
-        let date = formatter.date(from: createdAtOriginalString)!
-        // Configure output format
+        formatter.dateFormat = "E MM d HH:mm:ss Z y"
+        let date = formatter.date(from: rawTimeString)!
         formatter.dateStyle = .short
-        formatter.timeStyle = .none
-        // Convert Date to String
-        createdAtString = formatter.string(from: date)
+        formatter.timeStyle = time ? .medium : .none
+        return formatter.string(from: date)
     }
     
     static func tweets(with array: [[String: Any]]) -> [Tweet] {

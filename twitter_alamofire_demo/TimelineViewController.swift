@@ -8,14 +8,17 @@
 
 import UIKit
 
-class TimelineViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+class TimelineViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, ComposeViewControllerDelegate {
     
     var tweets: [Tweet] = []
+    var selectedRowIndex: Int?
     
     @IBOutlet weak var tableView: UITableView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        self.title = "Home"
         
         let refreshControl = UIRefreshControl()
         refreshControl.addTarget(self, action: #selector(refreshControlAction(_:)), for: UIControlEvents.valueChanged)
@@ -37,6 +40,11 @@ class TimelineViewController: UIViewController, UITableViewDelegate, UITableView
         }
     }
     
+    func did(post: Tweet) {
+        // TODO: User immediately sees new tweet after compose
+        return
+    }
+    
     func refreshControlAction(_ refreshControl: UIRefreshControl) {
         APIManager.shared.getHomeTimeLine { (tweets, error) in
             if let tweets = tweets {
@@ -47,6 +55,10 @@ class TimelineViewController: UIViewController, UITableViewDelegate, UITableView
                 print("Error getting home timeline: " + error.localizedDescription)
             }
         }
+    }
+    
+    @IBAction func didCompose(_ sender: UIBarButtonItem) {
+        performSegue(withIdentifier: "pushEditViewController", sender: nil)
     }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -62,6 +74,8 @@ class TimelineViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        selectedRowIndex = indexPath.row
+        performSegue(withIdentifier: "pushTweetDetailView", sender: nil)
         tableView.deselectRow(at: indexPath, animated: true)
     }
     
@@ -70,20 +84,24 @@ class TimelineViewController: UIViewController, UITableViewDelegate, UITableView
         // Dispose of any resources that can be recreated.
     }
     
-    
-    @IBAction func didTapLogout(_ sender: Any) {
-        APIManager.shared.logout()
-    }
-    
-    
-    /*
      // MARK: - Navigation
      
      // In a storyboard-based application, you will often want to do a little preparation before navigation
      override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
      // Get the new view controller using segue.destinationViewController.
      // Pass the selected object to the new view controller.
+        if let id = segue.identifier {
+            switch id {
+            case "pushTweetDetailView":
+                let vc = segue.destination as! TweetDetailViewController
+                vc.tweet = tweets[selectedRowIndex!]
+            default:
+                return
+            }
+        }
+        
+        return
      }
-     */
+ 
     
 }
